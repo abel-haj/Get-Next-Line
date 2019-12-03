@@ -29,10 +29,12 @@ int			main(int argc, char *argv[])
 		free(line);
 	}
 */
-	if (argc > 1)
+//	if (argc > 1)
 	{
 		// fldsc = open(argv[1], O_RDONLY);
 		fldsc = open("sometext.txt", O_RDONLY);
+//		get_next_line(fldsc, &line);
+//		printf("%d\n%s\n", fldsc, line);
 		while ((a = get_next_line(fldsc, &line)))
 		{
 			printf("%d\t%s\n", a, line);
