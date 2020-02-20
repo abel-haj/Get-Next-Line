@@ -1,67 +1,88 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   maingnl.c                                          :+:      :+:    :+:   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abel-haj <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/11/20 05:43:55 by abel-haj          #+#    #+#             */
-/*   Updated: 2020/02/03 21:51:55 by abel-haj         ###   ########.fr       */
+/*   Created: 2020/02/17 05:07:14 by abel-haj          #+#    #+#             */
+/*   Updated: 2020/02/20 02:08:28 by abel-haj         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <stdio.h>
 
-//int			BUFFER_SIZE = 10000000;
+static int	free_and_return(char *fs, char *ss, int ret)
+{
+	free(fs);
+	free(ss);
+	fs = NULL;
+	ss = NULL;
+	return (ret);
+}
+
+static void	joinnfree(char **line, char **buff)
+{
+	char	*tmp;
+
+	tmp = *line;
+	*line = ft_strjoin(*line, *buff);
+	free(tmp);
+}
+
+static int	ft_stcnl(char **ln, char **b, int n, char **lft)
+{
+	char	*tmp;
+
+	(*lft)[n] = '\0';
+	tmp = *ln;
+	if ((*ln = ft_strjoin(*ln, *lft)) == NULL)
+		return (free_and_return(*b, NULL, -1));
+	free(tmp);
+	tmp = *lft;
+	if ((*lft = ft_strdup(*lft + n + 1)) == NULL)
+		return (free_and_return(*b, NULL, -1));
+	return (free_and_return(*b, tmp, 1));
+}
+
+static int	ft_nl(char **ln, char **b, int n, char **lft)
+{
+	char	*tmp;
+
+	(*b)[n] = '\0';
+	tmp = *ln;
+	if ((*ln = ft_strjoin(*ln, *b)) == NULL)
+		return (free_and_return(*b, NULL, -1));
+	if ((*lft = ft_strdup(*b + n + 1)) == NULL)
+		return (free_and_return(*b, NULL, -1));
+	free_and_return(*b, tmp, 0);
+	return (1);
+}
 
 int			get_next_line(int fd, char **line)
 {
-	long int	i;
+	int			i;
 	long int	nlp;
-	char		*tmp;
-	static char	*left[6144];
+	char		*buff;
+	static char	*left[1024] = {NULL};
 
-	i = 0;
-	if (fd < 0 || BUFFER_SIZE < 0 || !line || read(fd, NULL, 0) < 0)
+	if (fd < 0 || BUFFER_SIZE < 0 || !line || !(*line = ft_strdup("")) ||
+	!(buff = malloc(BUFFER_SIZE + 1)) || read(fd, NULL, 0) < 0)
 		return (-1);
-	// read until a new line
-	// or the end of 
-
-	left[fd] = malloc(sizeof(char) * BUFFER_SIZE + 1);
-	tmp = malloc(sizeof(char) * BUFFER_SIZE + 1);
-
-	if (!left[fd])
+	if (left[fd] != NULL)
 	{
-		//	read
-		//	if newline
-		// 		return line
-		//	if no newline
-		//		read
-		while ((i == read(fd, tmp, BUFFER_SIZE)) > 0)
-		{
-			// if new line
-			if (ft_strindof(tmp, '\n') > -1)
-			{
-				// put in left if left
-				
-				// return line
-			}
-			else
-			{
-				// put in line
-			}
-		}
+		if ((nlp = ft_strindof(left[fd], '\n')) > -1)
+			return (ft_stcnl(line, &buff, nlp, &left[fd]));
+		joinnfree(line, &left[fd]);
+		free(left[fd]);
+		left[fd] = 0;
 	}
-	else
+	while ((i = read(fd, buff, BUFFER_SIZE)) > 0)
 	{
-		//	if newline
-		//		return line
-		//	if no newline
-		//		read
-		//			if newline
-		//				return newline
-		//			if no newline
-		//				read
+		buff[i] = 0;
+		if ((nlp = ft_strindof(buff, '\n')) > -1)
+			return (ft_nl(line, &buff, nlp, &left[fd]));
+		joinnfree(line, &buff);
 	}
+	return (free_and_return(buff, NULL, i));
 }
