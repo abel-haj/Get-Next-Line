@@ -24,9 +24,9 @@ size_t		ft_strlen(const char *s)
 	return (i);
 }
 
-int			ft_strindof(const char *s, int c)
+size_t		ft_strindof(const char *s, char c)
 {
-	int i;
+	size_t i;
 
 	i = 0;
 	while (s[i])
